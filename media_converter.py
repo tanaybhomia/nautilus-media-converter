@@ -4,9 +4,10 @@ import gi
 
 try:
     gi.require_version('Nautilus', '4.0')
+    gi.require_version('Gtk', '4.0')
 except ValueError:
     pass
-from gi.repository import Nautilus, GObject
+from gi.repository import Nautilus, GObject, Gtk, Gio
 
 class MediaConverterExtension(GObject.GObject, Nautilus.MenuProvider):
     def get_file_items(self, files):
@@ -62,12 +63,30 @@ class MediaConverterExtension(GObject.GObject, Nautilus.MenuProvider):
                 
             dir_name = os.path.dirname(input_path)
             base_name = os.path.splitext(os.path.basename(input_path))[0]
-            output_path = os.path.join(dir_name, f"{base_name}.{target_fmt}")
+            default_name = f"{base_name}.{target_fmt}"
             
-            if media_type == "image":
-                subprocess.Popen(["magick", input_path, output_path])
-                subprocess.Popen(["notify-send", "Conversion Complete", output_path])
-            elif media_type == "video":
-                cmd = f"ffmpeg -y -i '{input_path}' '{output_path}' && notify-send 'Video Conversion Complete' '{output_path}'"
-                subprocess.Popen(cmd, shell=True)
-                subprocess.Popen(["notify-send", "Video Conversion Started", f"Converting to {target_fmt.upper()}"])
+            dialog = Gtk.FileChooserNative.new(
+                "Save Converted File",
+                None,
+                Gtk.FileChooserAction.SAVE,
+                "Convert",
+                "Cancel"
+            )
+            
+            # Use current directory and suggested name
+            dialog.set_current_folder(Gio.File.new_for_path(dir_name))
+            dialog.set_current_name(default_name)
+            
+            def on_response(dialog, response_id, in_path=input_path, m_type=media_type, t_fmt=target_fmt):
+                if response_id == Gtk.ResponseType.ACCEPT:
+                    out_path = dialog.get_file().get_path()
+                    if m_type == "image":
+                        subprocess.Popen(["magick", in_path, out_path])
+                        subprocess.Popen(["notify-send", "Conversion Complete", out_path])
+                    elif m_type == "video":
+                        cmd = f"ffmpeg -y -i '{in_path}' '{out_path}' && notify-send 'Video Conversion Complete' '{out_path}'"
+                        subprocess.Popen(cmd, shell=True)
+                        subprocess.Popen(["notify-send", "Video Conversion Started", f"Converting to {t_fmt.upper()}"])
+            
+            dialog.connect("response", on_response)
+            dialog.show()
