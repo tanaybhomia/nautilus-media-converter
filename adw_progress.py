@@ -8,14 +8,14 @@ from gi.repository import Gtk, Adw, GLib, Gio
 class ProgressWindow(Adw.ApplicationWindow):
     def __init__(self, app, title, text):
         super().__init__(application=app, title=title)
-        self.set_default_size(400, 150)
+        self.set_size_request(300, -1)
         self.set_resizable(False)
 
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-        box.set_margin_top(32)
-        box.set_margin_bottom(32)
-        box.set_margin_start(32)
-        box.set_margin_end(32)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        box.set_margin_top(16)
+        box.set_margin_bottom(16)
+        box.set_margin_start(16)
+        box.set_margin_end(16)
 
         label = Gtk.Label(label=text)
         label.add_css_class("title-4")
