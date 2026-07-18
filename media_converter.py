@@ -80,13 +80,18 @@ class MediaConverterExtension(GObject.GObject, Nautilus.MenuProvider):
             def on_response(dialog, response_id, in_path=input_path, m_type=media_type, t_fmt=target_fmt):
                 if response_id == Gtk.ResponseType.ACCEPT:
                     out_path = dialog.get_file().get_path()
+                    
+                    ext_dir = os.path.dirname(os.path.realpath(__file__))
+                    progress_script = os.path.join(ext_dir, "adw_progress.py")
+                    
+                    notify_cmd = f"ACTION=$(notify-send 'Conversion Complete' '{out_path}' -A 'open=Open File'); if [ \"$ACTION\" = \"open\" ]; then xdg-open '{out_path}'; fi"
+                    
                     if m_type == "image":
-                        subprocess.Popen(["magick", in_path, out_path])
-                        subprocess.Popen(["notify-send", "Conversion Complete", out_path])
-                    elif m_type == "video":
-                        cmd = f"ffmpeg -y -i '{in_path}' '{out_path}' && notify-send 'Video Conversion Complete' '{out_path}'"
+                        cmd = f"magick '{in_path}' '{out_path}' && {notify_cmd}"
                         subprocess.Popen(cmd, shell=True)
-                        subprocess.Popen(["notify-send", "Video Conversion Started", f"Converting to {t_fmt.upper()}"])
+                    elif m_type == "video":
+                        cmd = f"ffmpeg -y -i '{in_path}' '{out_path}' 2>&1 | python3 '{progress_script}' 'Converting to {t_fmt.upper()}' 'Please wait...' && {notify_cmd}"
+                        subprocess.Popen(cmd, shell=True)
             
             dialog.connect("response", on_response)
             dialog.show()
