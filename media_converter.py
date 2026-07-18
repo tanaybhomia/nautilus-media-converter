@@ -68,5 +68,6 @@ class MediaConverterExtension(GObject.GObject, Nautilus.MenuProvider):
                 subprocess.Popen(["magick", input_path, output_path])
                 subprocess.Popen(["notify-send", "Conversion Complete", output_path])
             elif media_type == "video":
-                cmd = f"ffmpeg -y -i '{input_path}' '{output_path}' 2>&1 | zenity --progress --pulsate --text='Converting to {target_fmt.upper()}' --auto-close --auto-kill"
+                cmd = f"ffmpeg -y -i '{input_path}' '{output_path}' && notify-send 'Video Conversion Complete' '{output_path}'"
                 subprocess.Popen(cmd, shell=True)
+                subprocess.Popen(["notify-send", "Video Conversion Started", f"Converting to {target_fmt.upper()}"])
