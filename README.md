@@ -33,5 +33,3 @@ Select an image or video file in Nautilus. Right click and choose Convert to sel
 
 Supported image output formats: PNG, JPG, WEBP, GIF
 Supported video output formats: MP4, MKV, WEBM, GIF
-
-![Progress Window](docs/progress.png)
