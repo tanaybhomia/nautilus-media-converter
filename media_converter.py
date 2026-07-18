@@ -2,7 +2,10 @@ import os
 import subprocess
 import gi
 
-gi.require_version('Nautilus', '4.0')
+try:
+    gi.require_version('Nautilus', '4.0')
+except ValueError:
+    pass
 from gi.repository import Nautilus, GObject
 
 class MediaConverterExtension(GObject.GObject, Nautilus.MenuProvider):
@@ -62,7 +65,7 @@ class MediaConverterExtension(GObject.GObject, Nautilus.MenuProvider):
             output_path = os.path.join(dir_name, f"{base_name}.{target_fmt}")
             
             if media_type == "image":
-                subprocess.Popen(["convert", input_path, output_path])
+                subprocess.Popen(["magick", input_path, output_path])
                 subprocess.Popen(["notify-send", "Conversion Complete", output_path])
             elif media_type == "video":
                 cmd = f"ffmpeg -y -i '{input_path}' '{output_path}' 2>&1 | zenity --progress --pulsate --text='Converting to {target_fmt.upper()}' --auto-close --auto-kill"
